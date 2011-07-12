@@ -7,6 +7,7 @@ Uses Backbone.Events for firing following events:
  - stopped- when audio was stopped
  - finished - when audio was finished
  - updated - event with current progress during audio playing
+ - volumechange - when volume was changed
 
 Few convenient methods included. See source code for more details.
 

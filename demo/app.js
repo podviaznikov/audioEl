@@ -4,10 +4,10 @@ var models={},ui={},
     AppController={
     init:function(){
         var audioEl=AudioEl.newAudio('player','demo.mp3');
-        audioEl.bind('started',function(){
+        audioEl.on('started',function(){
             console.log('started');
         });
-        audioEl.bind('updated',function(duration,time){
+        audioEl.on('updated',function(duration,time){
             console.log('updated',duration,time);
             console.log(audioEl.timeCounter);
         });

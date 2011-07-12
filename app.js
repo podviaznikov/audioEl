@@ -1,4 +1,30 @@
 /**(c) 2011 Enginimation Studio (http://enginimation.com). May be freely distributed under the MIT license.*/
+var MicroEventEmitter=Object.create({},{
+    //object with all event's listeners
+    events:{
+        value:{}
+    },
+    //listener for event
+    on:{
+        value:function(event,fn){
+		    this.events[event]=this.events[event]||[];
+		    this.events[event].push(fn);
+        }
+    },
+    //fire event
+    fire:{
+        value:function(event /* , args... */){
+            if(event in this.events===false){
+            	return;
+            }
+            var listeners=this.events[event],
+                i=0;
+            for(;i<listeners.length;i++){
+                listeners[i].apply(this,Array.prototype.slice.call(arguments,1));
+            }
+	    }
+    }
+});
 var AudioEl=Object.create({},{
     //current version of the library
     version:{value:0.5},
@@ -12,34 +38,36 @@ var AudioEl=Object.create({},{
     },
     //audio element with handy methods
     Audio:{
-        value:Object.create({},{
+        value:Object.create(MicroEventEmitter,{
             //init function. Id of the DOM audio element should be passed. audio url parameter is optional
             init:{
                 value:function(id,url){
-                    _.bindAll(this,'_timeupdate','pause');
-                    _.extend(this,Backbone.Events);
+                    var self=this;
                     this.el=document.getElementById(id);
                     if(url){
                         this.el.setAttribute('src',url);
                     }
-                    this.el.addEventListener('timeupdate',this._timeupdate);
-                    this.el.addEventListener('pause',this.pause);
+                    //Playback has begun. Fired after the play() method has returned, or when the autoplay attribute has caused playback to begin.
+                    this.el.addEventListener('play',function(){
+                        self.fire('started');
+                    });
+                    //The current playback position changed as part of normal playback or in an especially interesting way, for example discontinuously.
+                    this.el.addEventListener('timeupdate',function(){
+                        self.fire('updated',self.duration,self.time);
+                    });
+                    //Either the volume attribute or the muted attribute has changed. Fired after the relevant attribute's setter has returned.
+                    this.el.addEventListener('volumechange',function(){
+                        self.fire('volumechange');
+                    });
+                    //Playback has been paused. Fired after the pause() method has returned.
+                    this.el.addEventListener('pause',function(){
+                        self.fire('paused');
+                    });
+                    //Playback has stopped because the end of the media resource was reached.
+                    this.el.addEventListener('ended',function(){
+                        self.fire('finished');
+                    });
                     return this;
-                }
-            },
-            //internal function for handling progress with playing
-            //Fires 'updated' or 'finished' event
-            _timeupdate:{
-                value:function(){
-                    var time=this.time,
-                        duration=this.duration,
-                        remaining=parseInt(duration-time,10);
-                    if(remaining===0){
-                        this.trigger('finished');
-                    }
-                    else{
-                        this.trigger('updated',duration,time);
-                    }
                 }
             },
             //play audio. Fires 'started' event
@@ -49,14 +77,12 @@ var AudioEl=Object.create({},{
                         this.el.setAttribute('src',url);
                     }
                     this.el.play();
-                    this.trigger('started');
                 }
             },
             //stop audio. Fires 'paused' event
             pause:{
                 value:function(){
                     this.el.pause();
-                    this.trigger('paused');
                 }
             },
             //stop audio. Fires 'stopped' event
@@ -64,7 +90,25 @@ var AudioEl=Object.create({},{
                 value:function(){
                     this.pause();
                     this.el.currentTime=0;
-                    this.trigger('stopped');
+                    this.fire('stopped');
+                }
+            },
+            //unmute: turn volume on
+            volumeOn:{
+                value:function(){
+                    this.el.muted=false;
+                }
+            },
+            //mute: turn volume off
+            volumeOff:{
+                value:function(){
+                    this.el.muted=true;
+                }
+            },
+            //mute/unmute: change current value on opposite.
+            toggleVolume:{
+                value:function(){
+                    this.el.muted=!this.el.muted;
                 }
             },
             //volume property. Readable and writable.
@@ -73,6 +117,12 @@ var AudioEl=Object.create({},{
                     return this.el.volume;
                 },
                 set:function(volume){
+                    if(volume<0){
+                        volume=0;
+                    }
+                    if(volume>1){
+                        volume=1;
+                    }
                     this.el.volume=volume;
                 }
             },
