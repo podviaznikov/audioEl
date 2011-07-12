@@ -29,22 +29,26 @@ var AudioEl=Object.create({},{
     version:{value:0.5},
     //factory method.
     newAudio:{
-        value:function(id,url){
+        value:function(id,options){
             var audio=Object.create(AudioEl.Audio);
-            audio.init(id,url);
+            audio.init(id,options);
             return audio;
         }
     },
     //audio element with handy methods
     Audio:{
         value:Object.create(MicroEventEmitter,{
-            //init function. Id of the DOM audio element should be passed. audio url parameter is optional
+            //init function. Id of the DOM audio element should be passed and some optional parameters.
             init:{
-                value:function(id,url){
-                    var self=this;
+                value:function(id,options){
+                    var self=this,
+                        options=options||{};
                     this.el=document.getElementById(id);
-                    if(url){
-                        this.el.setAttribute('src',url);
+                    if(options.url){
+                        this.el.setAttribute('src',options.url);
+                    }
+                    if(options.volume){
+                        this.volume=options.volume;
                     }
                     //Playback has begun. Fired after the play() method has returned, or when the autoplay attribute has caused playback to begin.
                     this.el.addEventListener('play',function(){
@@ -84,12 +88,24 @@ var AudioEl=Object.create({},{
                     this.el.pause();
                 }
             },
+            //indicates whether audio was paused
+            isPaused:{
+                value:function(){
+                    return this.el.paused;
+                }
+            },
             //stop audio. Fires 'stopped' event
             stop:{
                 value:function(){
                     this.pause();
                     this.el.currentTime=0;
                     this.fire('stopped');
+                }
+            },
+            //indicates whether audio was played until the end
+            isFinished:{
+                value:function(){
+                    return this.el.ended;
                 }
             },
             //unmute: turn volume on
@@ -108,6 +124,12 @@ var AudioEl=Object.create({},{
             toggleVolume:{
                 value:function(){
                     this.el.muted=!this.el.muted;
+                }
+            },
+            //check whether audio element is muted. Returns true if volume is 'on'.
+            isVolumeOn:{
+                value:function(){
+                    return this.el.muted!==true;
                 }
             },
             //volume property. Readable and writable.
