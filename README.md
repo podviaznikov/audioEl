@@ -1,6 +1,5 @@
 # audioEL
 Simple library for easy use of HTML5 Audio Element.
-Uses Backbone.Events for firing following events:
 
  - started - when audio started to play
  - paused - when audio was paused
