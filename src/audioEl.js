@@ -165,7 +165,7 @@ var AudioEl=Object.create({},{
             //percent property.Get percent of the played audio. Read-only
             percent:{
                 get:function(){
-                    return (this.getTime()/this.getDuration())*100;
+                    return (this.time/this.duration)*100;
                 }
             },
             //get just hours remaining from duration
@@ -188,17 +188,20 @@ var AudioEl=Object.create({},{
                     return parseInt(this.time-this.hours*3600-this.minutes*60,10);
                 }
             },
-            //get user readable remaining time
+            //get user readable remaining time. Something like 2:12:34
             timeCounter:{
                 get:function(){
                     var h=this.hours,
                         m=this.minutes,
                         s=this.seconds;
+                    function normalize(timeUnit){
+                        return timeUnit>9?timeUnit:'0'+timeUnit;
+                    };
                     if(h>0){
-                        return h+':'+(m>9?m:'0'+m)+':'(s>9?s:'0'+s);
+                        return h+':'+normalize(m)+':'+normalize(s);
                     }
                     else{
-                        return m+':'+(s>9?s:'0'+s);
+                        return m+':'+normalize(s);
                     }
                 }
             }
