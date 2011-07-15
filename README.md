@@ -6,7 +6,7 @@ Simple library for easy use of HTML5 Audio Element.
  - stopped- when audio was stopped
  - finished - when audio was finished
  - updated - event with current progress during audio playing
- - volumechange - when volume was changed
+ - volumechanged - when volume was changed
 
 Few convenient methods included. See source code for more details.
 

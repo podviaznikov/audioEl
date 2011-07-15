@@ -26,7 +26,7 @@ var MicroEventEmitter=Object.create({},{
 });
 var AudioEl=Object.create({},{
     //current version of the library
-    version:{value:0.5},
+    version:{value:0.6},
     //factory method.
     newAudio:{
         value:function(id,options){
@@ -45,7 +45,7 @@ var AudioEl=Object.create({},{
                         options=options||{};
                     this.el=document.getElementById(id);
                     if(options.url){
-                        this.el.setAttribute('src',options.url);
+                        this.url=options.url;
                     }
                     if(options.volume){
                         this.volume=options.volume;
@@ -60,7 +60,7 @@ var AudioEl=Object.create({},{
                     });
                     //Either the volume attribute or the muted attribute has changed. Fired after the relevant attribute's setter has returned.
                     this.el.addEventListener('volumechange',function(){
-                        self.fire('volumechange');
+                        self.fire('volumechanged');
                     });
                     //Playback has been paused. Fired after the pause() method has returned.
                     this.el.addEventListener('pause',function(){
@@ -77,7 +77,7 @@ var AudioEl=Object.create({},{
             play:{
                 value:function(url){
                     if(url){
-                        this.el.setAttribute('src',url);
+                        this.url=url;
                     }
                     this.el.play();
                 }
@@ -145,6 +145,15 @@ var AudioEl=Object.create({},{
                         volume=1;
                     }
                     this.el.volume=volume;
+                }
+            },
+            //url property. Source attribute of Audio Element.
+            url:{
+                get:function(){
+                    return this.el.getAttribute('src');
+                },
+                set:function(url){
+                    return this.el.setAttribute('src',url);
                 }
             },
             //duration property. Read-only
